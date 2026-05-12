@@ -1,0 +1,29 @@
+services:
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:2.14.0
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-UTC}
+    ports:
+      - "80:80"
+      - "81:81"
+      - "443:443"
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.npm.rule=Host(`${NPM_HOST:-npm.local}`)"
+      - "traefik.http.routers.npm.entrypoints=websecure"
+      - "traefik.http.routers.npm.tls=true"
+      - "traefik.http.routers.npm.tls.certresolver=letsencrypt"
+      - "traefik.http.services.npm.loadbalancer.server.port=81"
+
+networks:
+  proxy:
+    name: proxy
+    driver: bridge

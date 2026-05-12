@@ -1,0 +1,36 @@
+debug: false
+uuid: abcdefg-hijklmnop-qrstuv-wxyz
+token_id: blablabla
+token: blablabla
+api:
+  host: 0.0.0.0
+  port: 8080
+  ssl:
+    enabled: false
+    cert: /etc/letsencrypt/live/elytra1.jsemolik.dev/fullchain.pem
+    key: /etc/letsencrypt/live/elytra1.jsemolik.dev/privkey.pem
+  upload_limit: 100
+system:
+  data: /var/lib/elytra/volumes
+  sftp:
+    bind_port: 2022
+  backups:
+    rustic:
+      binary_path: rustic
+      repository_version: 2
+      tree_pack_size_mb: 4
+      data_pack_size_mb: 32
+      local: { enabled: true, repository_path: /var/lib/pterodactyl/rustic-repos, use_cold_storage: false, hot_repository_path: '' }
+      s3: { enabled: false, endpoint: '', region: us-east-1, bucket: '', use_cold_storage: false, hot_bucket: '', cold_storage_class: GLACIER, force_path_style: false, disable_ssl: false, ca_cert_path: '' }
+docker:
+  network:
+    name: pterodactyl_nw
+    driver: bridge
+    interfaces:
+      v4:
+        subnet: 172.22.0.0/16
+        gateway: 172.22.0.1
+allowed_mounts: []
+remote: 'https://ptero.example.com'
+allowed_origins:
+  - 'https://ptero.example.com'

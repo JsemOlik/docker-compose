@@ -1,0 +1,118 @@
+services:
+  database:
+    image: mariadb:10.5
+    container_name: pyrodactyl-db
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-pyrodactyl}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-pyrodactyl}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-panel}
+      MYSQL_USER: ${MYSQL_USER:-pterodactyl}
+      TZ: ${TZ:-UTC}
+    volumes:
+      - ./mariadb-data:/var/lib/mysql
+
+  cache:
+    image: redis:alpine
+    container_name: pyrodactyl-redis
+    restart: unless-stopped
+
+  panel:
+    image: ghcr.io/pyrodactyl-oss/pyrodactyl:latest
+    container_name: pyrodactyl-panel
+    restart: unless-stopped
+    depends_on:
+      - database
+      - cache
+    environment:
+      APP_URL: ${APP_URL:-https://ptero.example.com}
+      APP_TIMEZONE: ${APP_TIMEZONE:-UTC}
+      APP_SERVICE_AUTHOR: ${APP_SERVICE_AUTHOR:-noreply@example.com}
+      APP_ENV: ${APP_ENV:-production}
+      APP_ENVIRONMENT_ONLY: ${APP_ENVIRONMENT_ONLY:-false}
+
+      DB_CONNECTION: ${DB_CONNECTION:-mariadb}
+      DB_HOST: ${DB_HOST:-database}
+      DB_PORT: ${DB_PORT:-3306}
+      DB_USERNAME: ${DB_USERNAME:-pterodactyl}
+      DB_PASSWORD: ${DB_PASSWORD:-pyrodactyl}
+
+      CACHE_DRIVER: ${CACHE_DRIVER:-redis}
+      SESSION_DRIVER: ${SESSION_DRIVER:-redis}
+      QUEUE_DRIVER: ${QUEUE_DRIVER:-redis}
+      REDIS_HOST: ${REDIS_HOST:-cache}
+
+      MAIL_FROM: ${MAIL_FROM:-noreply@example.com}
+      MAIL_DRIVER: ${MAIL_DRIVER:-smtp}
+      MAIL_HOST: ${MAIL_HOST:-mail}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-true}
+
+      HASHIDS_LENGTH: ${HASHIDS_LENGTH:-8}
+    volumes:
+      - ./panel-var:/app/var
+      - ./panel-nginx:/etc/nginx/http.d
+      - ./panel-certs:/etc/letsencrypt
+      - ./panel-logs:/app/storage/logs
+    expose:
+      - "80"
+    networks:
+      - default
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.pyrodactyl-panel.rule=Host(`${PANEL_HOST:-panel.local}`)"
+      - "traefik.http.routers.pyrodactyl-panel.entrypoints=websecure"
+      - "traefik.http.routers.pyrodactyl-panel.tls=true"
+      - "traefik.http.routers.pyrodactyl-panel.tls.certresolver=letsencrypt"
+      - "traefik.http.services.pyrodactyl-panel.loadbalancer.server.port=80"
+
+  elytra:
+    image: ghcr.io/pyrohost/elytra:latest
+    container_name: pyrodactyl-elytra
+    restart: unless-stopped
+    tty: true
+    environment:
+      TZ: ${TZ:-UTC}
+      ELYTRA_PANEL_LOCATION: ${ELYTRA_PANEL_LOCATION:-https://ptero.example.com}
+      ELYTRA_TOKEN_ID: ${ELYTRA_TOKEN_ID:-pyrodactyl}
+      ELYTRA_TOKEN: ${ELYTRA_TOKEN:-pyrodactyl}
+      ELYTRA_DEBUG: ${ELYTRA_DEBUG:-false}
+      ELYTRA_API_HOST: 0.0.0.0
+      ELYTRA_API_PORT: 8080
+      ELYTRA_UID: ${ELYTRA_UID:-988}
+      ELYTRA_GID: ${ELYTRA_GID:-988}
+      ELYTRA_SYSTEM_ROOT_DIRECTORY: /var/lib/elytra
+      ELYTRA_SYSTEM_DATA: /var/lib/elytra/volumes
+      ELYTRA_SYSTEM_LOG_DIRECTORY: /var/log/elytra
+      ELYTRA_DOCKER_TMPFS_SIZE: ${ELYTRA_DOCKER_TMPFS_SIZE:-100}
+      ELYTRA_SYSTEM_BACKUPS_RUSTIC_LOCAL_ENABLED: ${ELYTRA_SYSTEM_BACKUPS_RUSTIC_LOCAL_ENABLED:-false}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:rw
+      - /var/lib/docker/containers:/var/lib/docker/containers:rw
+      - ./elytra-data:/var/lib/elytra
+      - ./elytra-logs:/var/log/elytra
+      - ./elytra-tmp:/tmp/elytra
+      - ./elytra-config:/etc/elytra
+    expose:
+      - "8080"
+    networks:
+      - default
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.pyrodactyl-elytra.rule=Host(`${ELYTRA_HOST:-elytra.local}`)"
+      - "traefik.http.routers.pyrodactyl-elytra.entrypoints=websecure"
+      - "traefik.http.routers.pyrodactyl-elytra.tls=true"
+      - "traefik.http.routers.pyrodactyl-elytra.tls.certresolver=letsencrypt"
+      - "traefik.http.services.pyrodactyl-elytra.loadbalancer.server.port=8080"
+
+networks:
+  proxy:
+    external: true
+    name: proxy

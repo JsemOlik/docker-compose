@@ -1,0 +1,60 @@
+services:
+  db:
+    image: docker.io/library/postgres:14
+    container_name: gitea-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-gitea}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gitea}
+      POSTGRES_DB: ${POSTGRES_DB:-gitea}
+      TZ: ${TZ:-UTC}
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gitea} -d ${POSTGRES_DB:-gitea}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gitea:
+    image: docker.gitea.com/gitea:1
+    container_name: gitea
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      USER_UID: ${USER_UID:-1000}
+      USER_GID: ${USER_GID:-1000}
+      TZ: ${TZ:-UTC}
+      GITEA__database__DB_TYPE: postgres
+      GITEA__database__HOST: db:5432
+      GITEA__database__NAME: ${POSTGRES_DB:-gitea}
+      GITEA__database__USER: ${POSTGRES_USER:-gitea}
+      GITEA__database__PASSWD: ${POSTGRES_PASSWORD:-gitea}
+      GITEA__server__ROOT_URL: https://${GITEA_HOST:-gitea.local}/
+      GITEA__server__DOMAIN: ${GITEA_HOST:-gitea.local}
+      GITEA__server__SSH_DOMAIN: ${GITEA_HOST:-gitea.local}
+      GITEA__service__DISABLE_REGISTRATION: ${GITEA_DISABLE_REGISTRATION:-true}
+    volumes:
+      - ./gitea-data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - default
+      - proxy
+    expose:
+      - "3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.gitea.rule=Host(`${GITEA_HOST:-gitea.local}`)"
+      - "traefik.http.routers.gitea.entrypoints=websecure"
+      - "traefik.http.routers.gitea.tls=true"
+      - "traefik.http.routers.gitea.tls.certresolver=letsencrypt"
+      - "traefik.http.services.gitea.loadbalancer.server.port=3000"
+
+networks:
+  proxy:
+    external: true
+    name: proxy

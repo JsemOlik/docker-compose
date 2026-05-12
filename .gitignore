@@ -1,0 +1,7 @@
+# Persistent service data
+**/data/
+**/letsencrypt/
+**/mariadb/
+
+# Traefik ACME cert storage
+traefik/letsencrypt/acme.json

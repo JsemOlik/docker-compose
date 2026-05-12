@@ -1,0 +1,10 @@
+# Pyrodactyl runtime data
+mariadb-data/
+panel-var/
+panel-nginx/
+panel-certs/
+panel-logs/
+elytra-data/
+elytra-logs/
+elytra-tmp/
+elytra-config/

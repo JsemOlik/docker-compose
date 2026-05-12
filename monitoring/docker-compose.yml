@@ -1,0 +1,84 @@
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: monitoring-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+    networks:
+      - default
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.prometheus.rule=Host(`${PROMETHEUS_HOST:-prometheus.local}`)"
+      - "traefik.http.routers.prometheus.entrypoints=websecure"
+      - "traefik.http.routers.prometheus.tls=true"
+      - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+    expose:
+      - "9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: monitoring-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-grafana}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-grafana}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      TZ: ${TZ:-UTC}
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+    networks:
+      - default
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.grafana.rule=Host(`${GRAFANA_HOST:-grafana.local}`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+    expose:
+      - "3000"
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: monitoring-node-exporter
+    restart: unless-stopped
+    pid: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: monitoring-cadvisor
+    restart: unless-stopped
+    privileged: true
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+
+networks:
+  proxy:
+    external: true
+    name: proxy
