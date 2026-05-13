@@ -1,25 +1,32 @@
 services:
   mercure:
     image: dunglas/mercure
+    container_name: mercure-hub
     restart: unless-stopped
-
     environment:
       SERVER_NAME: ':80'
-
-      MERCURE_PUBLISHER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
-      MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeThisMercureHubJWTSecretKey!'
-
+      MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_PUBLISHER_JWT_KEY:-mercure}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_SUBSCRIBER_JWT_KEY:-mercure}
       MERCURE_EXTRA_DIRECTIVES: |
         anonymous
-        cors_origins http://localhost:1420 https://sse.bfw.cz http://localhost:3000
-
-    ports:
-      - "5050:80"
-
+        cors_origins https://${SSE_HOST:-sse.example.com} http://localhost:1420 http://localhost:3000
     volumes:
-      - mercure_data:/data
-      - mercure_config:/config
+      - ./data:/data
+      - ./config:/config
+    expose:
+      - "80"
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.mercure.rule=Host(`${SSE_HOST:-sse.example.com}`)"
+      - "traefik.http.routers.mercure.entrypoints=websecure"
+      - "traefik.http.routers.mercure.tls=true"
+      - "traefik.http.routers.mercure.tls.certresolver=letsencrypt"
+      - "traefik.http.services.mercure.loadbalancer.server.port=80"
 
-volumes:
-  mercure_data:
-  mercure_config:
+networks:
+  proxy:
+    external: true
+    name: proxy
