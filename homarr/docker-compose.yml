@@ -1,0 +1,27 @@
+services:
+  homarr:
+    image: ghcr.io/homarr-labs/homarr:latest
+    container_name: homarr
+    restart: unless-stopped
+    environment:
+      SECRET_ENCRYPTION_KEY: ${SECRET_ENCRYPTION_KEY:-replace-with-openssl-rand-hex-32}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./appdata:/appdata
+    expose:
+      - "7575"
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.homarr.rule=Host(`${HOMARR_HOST:-homarr.local}`)"
+      - "traefik.http.routers.homarr.entrypoints=websecure"
+      - "traefik.http.routers.homarr.tls=true"
+      - "traefik.http.routers.homarr.tls.certresolver=letsencrypt"
+      - "traefik.http.services.homarr.loadbalancer.server.port=7575"
+
+networks:
+  proxy:
+    external: true
+    name: proxy
