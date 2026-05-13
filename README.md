@@ -12,6 +12,7 @@ This repository is organized as one folder per service so you can deploy each st
 - `mercure-hub/`
 - `homarr/`
 - `dockge/`
+- `jellyfin/`
 
 ### Shared proxy network
 Each stack defines a Docker network named `proxy`.
