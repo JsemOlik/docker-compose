@@ -9,7 +9,6 @@ services:
       - /home/jsemolik/docker-compose:/home/jsemolik/docker-compose
     environment:
       - DOCKGE_STACKS_DIR=/home/jsemolik/docker-compose
-      - DOCKGE_ENABLE_CONSOLE=true
     expose:
       - "5001"
     networks:
