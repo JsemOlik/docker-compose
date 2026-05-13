@@ -1,0 +1,28 @@
+services:
+  dockge:
+    image: louislam/dockge:1
+    container_name: dockge
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/app/data
+      - /home/jsemolik/docker-compose:/home/jsemolik/docker-compose
+    environment:
+      - DOCKGE_STACKS_DIR=/home/jsemolik/docker-compose
+    expose:
+      - "5001"
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=proxy"
+      - "traefik.http.routers.dockge.rule=Host(`${DOCKGE_HOST:-dockge.example.com}`)"
+      - "traefik.http.routers.dockge.entrypoints=websecure"
+      - "traefik.http.routers.dockge.tls=true"
+      - "traefik.http.routers.dockge.tls.certresolver=letsencrypt"
+      - "traefik.http.services.dockge.loadbalancer.server.port=5001"
+
+networks:
+  proxy:
+    external: true
+    name: proxy
