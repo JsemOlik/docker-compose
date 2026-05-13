@@ -26,7 +26,14 @@ networks:
 ### Usage
 1. In each service folder you deploy, copy that folder's `.env.example` to `.env` and set real values.
 2. Pick your reverse proxy (`nginx-proxy-manager` or `traefik`) and start it.
-3. Start any additional stacks:
+3. Prepare local volume permissions:
+
+```bash
+cd <folder>
+./setup-volumes.sh
+```
+
+4. Start the stack:
 
 ```bash
 cd <folder>
