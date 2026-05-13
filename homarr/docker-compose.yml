@@ -4,7 +4,7 @@ services:
     container_name: homarr
     restart: unless-stopped
     environment:
-      SECRET_ENCRYPTION_KEY: ${SECRET_ENCRYPTION_KEY:-replace-with-openssl-rand-hex-32}
+      SECRET_ENCRYPTION_KEY: ${SECRET_ENCRYPTION_KEY:-5ff97efc13fb9e23003e231fdd12edd042b57232439a98f288c910f6744b7383}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./appdata:/appdata
