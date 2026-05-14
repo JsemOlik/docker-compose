@@ -1,12 +1,25 @@
 http:
   routers:
-    immich:
+    immich-http:
+      rule: Host(`immich.jsemolik.dev`)
+      entryPoints:
+        - web
+      middlewares:
+        - redirect-to-https
+      service: immich
+
+    immich-https:
       rule: Host(`immich.jsemolik.dev`)
       entryPoints:
         - websecure
       tls:
         certResolver: letsencrypt
       service: immich
+
+  middlewares:
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
 
   services:
     immich:
