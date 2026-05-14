@@ -14,9 +14,11 @@ run_priv() {
 }
 
 mkdir -p letsencrypt
+mkdir -p dynamic
 touch letsencrypt/acme.json
 run_priv chown 0:0 letsencrypt/acme.json
 run_priv chmod 600 letsencrypt/acme.json
 run_priv chmod 700 letsencrypt
+run_priv chmod 755 dynamic
 
 echo "traefik volumes prepared"
