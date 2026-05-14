@@ -13,8 +13,8 @@ http:
       loadBalancer:
         servers:
           - url: "https://10.1.0.10:8006"
-      serversTransport: proxmox-insecure
+        serversTransport: proxmox-insecure
 
-serversTransports:
-  proxmox-insecure:
-    insecureSkipVerify: true
+  serversTransports:
+    proxmox-insecure:
+      insecureSkipVerify: true
