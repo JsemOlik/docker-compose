@@ -1,0 +1,15 @@
+http:
+  routers:
+    truenas:
+      rule: Host(`nas.jsemolik.dev`)
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      service: truenas
+
+  services:
+    truenas:
+      loadBalancer:
+        servers:
+          - url: "http://10.1.0.30:80"
