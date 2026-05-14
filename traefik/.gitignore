@@ -1,7 +1,2 @@
 # Traefik runtime data
 letsencrypt/
-
-# Local dynamic provider files (keep examples tracked)
-dynamic/*.yml
-!dynamic/*.example.yml
-!dynamic/.gitkeep

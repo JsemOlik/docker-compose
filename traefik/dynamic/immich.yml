@@ -1,7 +1,7 @@
 http:
   routers:
     immich:
-      rule: Host(`immich.example.com`)
+      rule: Host(`immich.jsemolik.dev`)
       entryPoints:
         - websecure
       tls:
@@ -12,4 +12,4 @@ http:
     immich:
       loadBalancer:
         servers:
-          - url: "http://10.1.0.69:30041"
+          - url: "http://10.1.0.30:30041"
