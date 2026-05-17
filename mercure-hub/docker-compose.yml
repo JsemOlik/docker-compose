@@ -4,7 +4,7 @@ services:
     container_name: mercure-hub
     restart: unless-stopped
     environment:
-      SERVER_NAME: ':80'
+      SERVER_NAME: ":80"
       MERCURE_PUBLISHER_JWT_KEY: ${MERCURE_PUBLISHER_JWT_KEY:-mercure}
       MERCURE_SUBSCRIBER_JWT_KEY: ${MERCURE_SUBSCRIBER_JWT_KEY:-mercure}
       MERCURE_EXTRA_DIRECTIVES: |
