@@ -44,4 +44,3 @@ docker compose up -d
 ```
 
 Do not run Nginx Proxy Manager and Traefik at the same time on one host, because both bind ports `80` and `443`.
-
