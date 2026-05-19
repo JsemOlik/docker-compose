@@ -19,5 +19,5 @@ http:
     immich-transport:
       forwardingTimeouts:
         dialTimeout: 30s
-        responseHeaderTimeout: 1800s
-        idleConnTimeout: 1800s
+        responseHeaderTimeout: 3600s
+        idleConnTimeout: 3600s
