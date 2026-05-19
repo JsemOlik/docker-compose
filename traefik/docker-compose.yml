@@ -20,9 +20,9 @@ services:
       - --entrypoints.websecure.address=:443
 
       # IMPORTANT: fixes Immich large uploads timing out after 60s
-      - --entrypoints.websecure.transport.respondingtimeouts.readtimeout=0s
-      - --entrypoints.websecure.transport.respondingtimeouts.writetimeout=0s
-      - --entrypoints.websecure.transport.respondingtimeouts.idletimeout=600s
+      - --entrypoints.websecure.transport.respondingtimeouts.readtimeout=1800s
+      - --entrypoints.websecure.transport.respondingtimeouts.writetimeout=1800s
+      - --entrypoints.websecure.transport.respondingtimeouts.idletimeout=1800s
 
       - --certificatesresolvers.letsencrypt.acme.email=${LETSENCRYPT_EMAIL:-admin@example.com}
       - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
